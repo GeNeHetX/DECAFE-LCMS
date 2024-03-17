@@ -137,7 +137,8 @@ library(htmltools)
 
           fluidRow(
              tags$div(style="text-align:center;",                        
-                       h1(HTML("Welcome to <strong>D</strong>ifferential <strong>E</strong>xpression for <strong>C</strong>ount data <strong>A</strong>nalysis with <strong>F</strong>unctional <strong>E</strong>nrichment"))),br(),
+                       h1(HTML("Welcome to <strong>D</strong>ifferential <strong>E</strong>xpression for <strong>C</strong>ount data <strong>A</strong>nalysis with <strong>F</strong>unctional <strong>E</strong>nrichment <br/> Modified for LC MS/MS"))),br(),
+
 
           box(width = 12, title = h1('Presentation', icon('display')), status = 'success', solidHeader = TRUE, collapsible = TRUE,
               fluidRow(
@@ -320,7 +321,7 @@ library(htmltools)
             ),
             column(width = 3,
               selectInput('org', 'Choose your species', choices = list(Human='hs', Mouse='mm')),#, Other='oth'))
-              radioButtons('normalized', 'Matrix already normalized', choices = list(YES=TRUE, NO=FALSE), inline=TRUE, selected = FALSE),
+              radioButtons('normalized', 'Matrix already normalized', choices = list(YES=TRUE, NO=FALSE), inline=TRUE, selected = TRUE),
               # radioButtons('sex', 'Independently analyze sex genes', choices = list(YES=TRUE, NO=FALSE), inline=TRUE, selected = FALSE)
               # conditionalPanel("input.org == 'oth'", fileInput('genefile', 'Load Gene Annotation'))
             ),
@@ -474,8 +475,9 @@ library(htmltools)
         imageOutput('path_Image')),
         
         column(width = 3,
-        uiOutput('dbpath')),
-
+        uiOutput('dbpath'),
+        p(icon('circle-info')," To have p-values significant, it is preferable to choose only one list of channels.")
+        ),
         column(width = 2,
         actionButton('gogsea', label='Run GSEA', icon('play')))
       ),

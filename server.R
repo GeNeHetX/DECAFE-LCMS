@@ -134,30 +134,13 @@ output$annot_Image <- renderImage({
     notif <<- showNotification("Opening count matrix in progress", duration = 0)
     count = read.delim(input$file$datapath, sep='\t', row.names = 1, header=T,as.is=T)
     removeNotification(notif)
-      #if(!is.integer(count))
-    #showModal(modalDialog(
-    #    title = "Invalid input",
-    #    "The  count matrix must not be normalized, only integer are accepted!",
-    #    easyClose = TRUE
-    #  ))
+
 
     genefile = switch(input$org, 
     'hs' = 'humanGeneannot.rds',
     'mm' = 'mouseGeneannot.rds',
     )
-    #geneannot = readRDS(genefile)
-    #rownames(geneannot) = 
-    #geneannot =  geneannot[rownames(count),]
 
-    #if (input$coding) {
-    #count <- count[geneannot$biotype == 'protein_coding', ]
-    #geneannot <- geneannot[geneannot$biotype == 'protein_coding', ]
-    #}
-
-    # if (input$sex) {
-    #   count <- count[!grepl("^(Y|X|MT)$", geneannot$seqname), ]
-    #   geneannot <- geneannot[!grepl("^(Y|X|MT)$", geneannot$seqname), ]
-    # }
     
     return(list(count=count
       #,      geneannot=geneannot)
@@ -211,7 +194,7 @@ output$annot_Image <- renderImage({
 
   output$counthead <- DT::renderDT(server = FALSE, {
     data = countFile()$count
-    data = data[1:10, ]
+    #data = data[1:10, ]
 
     DT::datatable(
       data,
@@ -362,7 +345,7 @@ output$downloadUpsetPlot <- downloadHandler(
 
     count_intersect = intersect$count
     annot_intersect = intersect$annot
-    print(head(annot_intersect))
+
 
     zero_threshold = as.numeric(input$zero_threshold)
     countfilt = count_intersect[rowMeans(count_intersect == 0) <= (zero_threshold ), ]
@@ -373,19 +356,14 @@ output$downloadUpsetPlot <- downloadHandler(
 
     count_normalized = countfilt / rowSums(countfilt)}
 
-    #annot_intersect$condshiny = as.factor(annot_intersect$condshiny)
+
     
     A = as.character(unique(annot_intersect$condshiny)[1])
     B = as.character(unique(annot_intersect$condshiny)[2])
-    #annot_intersect$condshiny <- factor(annot_intersect$condshiny, levels = c(A, B))
-    print(annot_intersect$condshiny)
+
     results = ROTS(data = count_normalized, groups =annot_intersect$condshiny , B = 100 , seed = 1234, log=FALSE)
 
-    #dds = DESeqDataSetFromMatrix(countData = data.matrix(countfilt),
-    #                                colData = annot_intersect,
-    #                                design = ~ condshiny)
 
-    #dds = dds[rowSums(counts(dds)) >= 10]
     removeNotification(notif)
     return(results)
   })
@@ -437,29 +415,27 @@ output$downloadUpsetPlot <- downloadHandler(
 countNormGenePlot <-reactive({
   
     normalized_counts =  desqNormalization_cond()
-    print(head(normalized_counts))
+
     annotName = annotationName()
 
     annot_name_cond1 = annotName$annotName1
     annot_name_cond2 = annotName$annotName2
     annot_gp1 = annotName$annotGP1
     annot_gp2 = annotName$annotGP2
-    print(annot_gp1)
-    print(annot_gp2)
+
     norm1 = normalized_counts[as.numeric(input$geneTarget),intersect(annot_gp1, colnames(normalized_counts))]
-    print(norm1)
+
     norm2 = normalized_counts[as.numeric(input$geneTarget),intersect(annot_gp2, colnames(normalized_counts))]
     
     norm1_rm = as.vector(unlist(norm1))
     norm2_rm = as.vector(unlist(norm2))
-    print(norm1_rm)
-    print(norm2_rm)
+
 
     res = data.frame(cbind(
       count = c(norm1_rm, norm2_rm),
       condition = c(rep(annot_name_cond1,length(norm1_rm)), rep(annot_name_cond2,length(norm2_rm))))
     )
-    print(head(res))
+
     return(res)
   })
 
@@ -810,12 +786,12 @@ pca_alldownload <- reactive({
     contrib = pca_gene$contrib[,as.numeric(input$dim1)]
     intersect = intersectCond()
     count_intersect = intersect$count
-    #geneannot = countFile()$geneannot
+
 
     tab = as.data.frame(
       cbind(
         name = rownames(count_intersect),
-        #as.vector(geneannot[rownames(count_intersect),'GeneName']),
+
         contrib = contrib
       )
     )
@@ -866,7 +842,7 @@ pca_alldownload <- reactive({
     tab = as.data.frame(
       cbind(
         name = rownames(count_intersect), 
-        #as.vector(geneannot[rownames(count_intersect),'GeneName']),
+
         contrib = contrib
       )
     )
@@ -913,29 +889,18 @@ pca_alldownload <- reactive({
   resDeseq <- reactive({
 
     dds = DDS_cond()
-    print(names(dds))
-
+    
     notif <<- showNotification("Differential analysis in progress", duration = 0)
     nb_thread = as.numeric(input$nb_thread)
-    #if(nb_thread > 1){
-    #  BiocParallel::register(BiocParallel::MulticoreParam())
-    #  dds = DESeq(dds,parallel = TRUE)
-    #}
-    #else{
-    #  dds = DESeq(dds,parallel = FALSE)
-    #}
+
     geneannot = countFile()$geneannot
-    #table = results(dds)
+
    
     removeNotification(notif)
     name = rownames(dds$data)
-    #as.vector(geneannot[rownames(table), 'GeneName'])
-    table = as.data.frame(cbind(name=name,log2FoldChange=dds$logfc,padj=dds$FDR,pvalue=dds$pvalue,stat=dds$d))
-    
 
-    #table = as.data.frame(table)
-    print(head(table))
-    # table = table[order(abs(table$stat),decreasing=TRUE),]  
+    table = as.data.frame(cbind(name=name,log2FoldChange=dds$logfc,padj=dds$FDR,pvalue=dds$pvalue,stat=dds$d))
+
     table$padj = as.numeric(table$padj)
     table$log2FoldChange= as.numeric(table$log2FoldChange)
     table$stat = as.numeric(table$stat)
@@ -949,21 +914,20 @@ pca_alldownload <- reactive({
     table = resDeseq()$res
     table$padj = as.numeric(table$padj)
     table$log2FoldChange= as.numeric(table$log2FoldChange)
-    print(head(table))
     tsPadj = as.numeric(input$ts_padj)
     tsFC = 1
-    print('ts')
+
     table$diffexpressed = "NO"
     table$diffexpressed[table$log2FoldChange > tsFC & table$padj < tsPadj] = "UP"
     table$diffexpressed[table$log2FoldChange < -tsFC & table$padj < tsPadj] = "DOWN"
-    print('diffexpressed')
+
     cols=c("lightcoral", "lightgrey","#4ab3d6")
 
     if(nrow(table[table$diffexpressed == 'NO', ])   == 0) { cols = c('lightcoral' , '#4ab3d6')}
     if(nrow(table[table$diffexpressed == 'DOWN',]) == 0) { cols = c('lightgrey', '#4ab3d6')}
     if(nrow(table[table$diffexpressed == 'UP',])   == 0)  { cols = c('lightgrey', 'lightcoral')}
 
-    print(head(table))
+
     plot = ggplot(data=as.data.frame(table), aes(x=log2FoldChange, y=-log10(padj), col=diffexpressed, tooltip=name)) +
       geom_point(size=1) + theme_minimal()+
       geom_vline(xintercept=c(-tsFC, tsFC), col="#919191") +
@@ -1022,17 +986,17 @@ pca_alldownload <- reactive({
         dom = 'Bfrtip', 
         scrollX = TRUE,
         buttons = list(
-          list(extend = "copy", text = "Copy", filename = "res_deseq",
+          list(extend = "copy", text = "Copy", filename = "res_rots",
                exportOptions = list(
                  modifier = list(page = "current")
                )
           ),
-          list(extend = "csv", text = "CSV", filename = "res_deseq",
+          list(extend = "csv", text = "CSV", filename = "res_rots",
                exportOptions = list(
                  modifier = list(page = "all")
                )
           ),
-          list(extend = "excel", text = "Excel", filename = "res_deseq",
+          list(extend = "excel", text = "Excel", filename = "res_rots",
                exportOptions = list(
                  modifier = list(page = "all")
                )
@@ -1044,9 +1008,7 @@ pca_alldownload <- reactive({
 
   # Boxplot Panel
   geneTargetChoice <- reactive({
-    # count= countFile()$count
-    # geneannot = countFile()$geneannot
-    # genename_list = as.vector(geneannot[rownames(count),'GeneName'])
+
     genename_list = as.vector(resDeseq()$res$name)
 
     name = genename_list
@@ -1069,10 +1031,10 @@ pca_alldownload <- reactive({
     res = countNormGenePlot()
     res$count = as.numeric(res$count)
     res$condition= as.factor(res$condition)
-    print(res)
+
     
     res$genetarget = geneTargetChoice()$choix_name[as.numeric(input$geneTarget)]
-    print(res$genetarget)
+
     padj = resDeseq()$res$padj[which(resDeseq()$res$name == res$genetarget[1])]
    
     df_p_val <- data.frame(cbind(
@@ -1081,12 +1043,11 @@ pca_alldownload <- reactive({
       label = padj[1],
       y.position = max(res$count)*1.1)
     )
-    print(df_p_val$label)
+
     colnames(df_p_val) = c('group1','group2','label','y.position')
     df_p_val$label=as.numeric(df_p_val$label)
-    print('output$bpGeneTarget')
 
-    print(res)
+
     ggplot(res, aes(x=condition,y=count, color=condition)) + geom_boxplot() +
       rotate_x_text(45)+ labs(x = "dispersion", y = paste0('count normDESq2 of target gene: ',res$genetarget[1]))+
       scale_color_manual(values=c("lightcoral", '#4ab3d6')) + 
@@ -1098,14 +1059,9 @@ pca_alldownload <- reactive({
   output$histGeneTarget <- renderPlot({
     res = countNormGenePlot()
     res$count = as.numeric(res$count)
-    print('befor factor')
-    print(head(res))
-    print(res$condition)
-    print(as.factor(res$condition))
+
     #res$condition= as.factor(res$condition)
     res$genetarget = geneTargetChoice()$choix_name[as.numeric(input$geneTarget)]
-    print('hist')
-    print(res)
 
     ggplot(res, aes(x=as.numeric(count), color=as.factor(condition))) +
       geom_histogram(fill="white", alpha=0.5, position="identity") + 
@@ -1147,8 +1103,7 @@ output$downloadboxplot <- downloadHandler(
                   labs(x = paste0('count normDESq2 of target gene: ',res$genetarget),y = "number of samples") + 
                   scale_color_manual(values=c("lightcoral", '#4ab3d6'))       
         
-        print(histo)
-        print(boxplot)
+
         dev.off()   
       })
 
@@ -1196,15 +1151,14 @@ output$downloadboxplot <- downloadHandler(
     }}
     
     table = resDeseq()$res
-    print(head(table))
+
     vec = as.numeric(table$stat)
     names(vec) = str_replace(table$name," ","")
 
     notif <<- showNotification("GSEA in progress", duration = 0)
     nb_thread = as.numeric(input$nb_thread)
 
-    print(pathways)
-    print(vec)
+
     
     if(nb_thread > 1){
       res = fgseaSimple(pathways,vec,BPPARAM = BiocParallel::MulticoreParam(nb_thread), nperm = 1000)
@@ -1223,14 +1177,15 @@ output$downloadboxplot <- downloadHandler(
     lE_list = res$leadingEdge
     lE_vector = sapply(lE_list, paste, collapse=", ")
     res$leadingEdge = lE_vector
-    print(res)
+
     res = as.data.frame(na.omit(res))
     res_sig = res[which(as.numeric(res$padj) < 0.05),]
+
     res_sort = res_sig[order(abs(as.numeric(res_sig$NES)),decreasing=TRUE),]
     res_sort = res_sort[, c(9, 1:5, 7:8)]
 
-    return(res)
-    #return(res_sort)
+
+    return(res_sort)
   })
 
 
