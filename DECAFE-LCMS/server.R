@@ -1180,7 +1180,7 @@ output$downloadboxplot <- downloadHandler(
     res$leadingEdge = lE_vector
 
     res = as.data.frame(na.omit(res))
-    res_sig = res[which(as.numeric(res$padj) < 0.05),]
+    res_sig = res #[which(as.numeric(res$padj) < 0.05),]
 
     res_sort = res_sig[order(abs(as.numeric(res_sig$NES)),decreasing=TRUE),]
     res_sort = res_sort[, c(9, 1:5, 7:8)]
