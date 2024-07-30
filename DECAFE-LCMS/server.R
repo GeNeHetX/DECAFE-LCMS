@@ -1162,11 +1162,11 @@ output$downloadboxplot <- downloadHandler(
 
     
     if(nb_thread > 1){
-      res = fgseaSimple(pathways,vec,BPPARAM = BiocParallel::MulticoreParam(nb_thread), nperm = 1000)
+      res = fgseaMultilevel(pathways,vec)
     }
   
     else{
-      res = fgseaSimple(pathways,vec, nperm = 1000)
+     res = fgseaMultilevel(pathways,vec)
     }
     
     splitcolpath = strsplit(res$pathway, '_:_')
