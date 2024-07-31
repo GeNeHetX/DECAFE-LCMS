@@ -1178,10 +1178,10 @@ output$downloadboxplot <- downloadHandler(
     lE_list = res$leadingEdge
     lE_vector = sapply(lE_list, paste, collapse=", ")
     res$leadingEdge = lE_vector
-
+  print(dim(res))
     res = as.data.frame(na.omit(res))
     res_sig = res #[which(as.numeric(res$padj) < 0.05),]
-
+    print(dim(res))
     res_sort = res_sig[order(abs(as.numeric(res_sig$NES)),decreasing=TRUE),]
     res_sort = res_sort[, c("collection", "pathway", "pval", "padj", "ES","NES", "size", "leadingEdge")]
 
