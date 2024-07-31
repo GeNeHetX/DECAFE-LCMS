@@ -1183,7 +1183,7 @@ output$downloadboxplot <- downloadHandler(
     res_sig = res #[which(as.numeric(res$padj) < 0.05),]
 
     res_sort = res_sig[order(abs(as.numeric(res_sig$NES)),decreasing=TRUE),]
-    res_sort = res_sort[, c(9, 1:5, 7:8)]
+    rres_sort = res_sort[, c("collection", "pathway", "pval", "padj", "ES","NES", "size", "leadingEdge")]
 
 
     return(res_sort)
